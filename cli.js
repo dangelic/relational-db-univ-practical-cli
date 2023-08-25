@@ -9,9 +9,8 @@ function sleep(ms = 5000) {
 const fetchData = async (endpoint, paramName = null, paramValue = null) => {
   try {
     let url = `${BASE_URL}/${endpoint}`;
-    if (paramName && paramValue) {
-      url += `?${paramName}=${paramValue}`;
-    } 
+    if (paramName && paramValue) url += `?${paramName}=${paramValue}`;
+    
     console.log(url)
     const response = await fetch(url);
     const data = await response.json();
@@ -54,11 +53,65 @@ const displayProductsTable = (products) => {
   products.forEach((product) => {
     table.push([
       product.productId,
-      product.productTitle.slice(0, 100),
+      product.productTitle ? product.productTitle.slice(0,50) : product.productTitle,
       product.productGroup,
       product.ean,
       product.salesrank,
       product.averageRating || 'not rated yet.',
+    ]);
+  });
+
+  console.log(table.toString());
+};
+
+const displayOffersTable = (products) => {
+  const table = new Table({
+    head: ['ASIN', 'Titel', 'Kategorie', 'Verkaufsrang', 'Bewertung (avg)', 'Filiale', 'Preis', 'Währung', 'Zustand'],
+  });
+
+  products.forEach((product) => {
+    table.push([
+      product.product.productId,
+      product.product.productTitle ? product.product.productTitle.slice(0,50) : product.product.productTitle,
+      product.product.productGroup,
+      product.product.salesrank,
+      product.product.averageRating || 'not rated yet.',
+      product.shop.shopId,
+      product.shop.price ? product.shop.price : "In dieser Filiale ausverkauft.", 
+      product.shop.currency,
+      product.shop.state,
+    ]);
+  });
+
+  console.log(table.toString());
+};
+
+const displayUsersTable = (users) => {
+  const table = new Table({
+    head: ['USERNAME'],
+  });
+
+  users.forEach((user) => {
+    table.push([
+      user.username,
+    ]);
+  });
+
+  console.log(table.toString());
+};
+
+const displayReviewsTable = (reviews) => {
+  const table = new Table({
+    head: ['USERNAME', 'Bewertung', 'Hilfreich-Vote', 'Zusammenfassung', 'Text'],
+  });
+
+  reviews.forEach((review) => {
+    table.push([
+      review.user.username,
+      review.rating,
+      review.helpfulVotes,
+      review.summary ? review.summary.slice(0,30) : review.summary,
+      review.content ? review.content.slice(0,30) : review.content
     ]);
   });
 
@@ -70,7 +123,7 @@ const displayCategoryTree = (categories, depth = 0) => {
     const isLast = index === array.length - 1;
     const prefix = depth > 0 ? (isLast ? '└── ' : '├── ') : '';
 
-    const indent = '    '.repeat(depth); // Four spaces for each level of depth
+    const indent = '    '.repeat(depth); // Tiefenlevel mit je 4 spaces
 
     console.log(`${indent}${prefix}${category.name}`);
     
@@ -89,8 +142,7 @@ const main = async () => {
   console.log("╰─────────────────────────────────────────── ");
   console.log();
 
-
-  while (true) {
+  while (loop=true) {
     const options = [
       '-- getProduct: Erhalte Informationen zu einem spezifischen Produkt', 
       '-- getProducts: Erhalte eine Liste an Produkten, die zu einem Suchmuster passen', 
@@ -100,17 +152,11 @@ const main = async () => {
       '-- getSimilarCheaperProduct: Erhalte eine Liste an ähnlichen - aber preiswerteren Produkten',
       '-- addNewReview: Füge eine Bewertung als Gast (annonym) oder als angemeldeter Nutzer hinzu',
       '-- viewUserReviews: chaue Nutzerbewertungen zu einem spezifischen Produkt an',
-      '-- viewGuestReviews: Schaue Gastbewertungen zu einem spezifischen Produkt an',
       '-- getTrolls: Zeige alle oft-bewertenden Nutzer an, die auffällig oft ein schlechtes Rating vergeben',
-      '-- getOffers: Erhalte eine Liste aller Angebote für ein spezifisches Produkt',];
+      '-- getOffers: Erhalte eine Liste aller Angebote für ein spezifisches Produkt',
+    ]
     let selectedOptionIndex = readlineSync.keyInSelect(options, 'MENU: Choose an option:', {
-      cancel: '-- Exit --',
     });
-
-    // if (selectedOptionIndex) {
-    //   console.log('Shopsystem beendet!');
-    //   break;
-    // }
 
     switch (selectedOptionIndex) {
 
@@ -169,33 +215,40 @@ const main = async () => {
       }
 
       // addNewReview
-      case 5: {
+      case 6: {
         // TODO!
         break
       }
 
-
+      // viewUserReviews
       case 7: {
-        const k = parseInt(readlineSync.question('Enter the value of K: '));
+        const productId = readlineSync.question("Eingabe - Product ID (ASIN): ");
+        const userReviews = await fetchData("reviews/view-user-reviews", "productId", productId);
+        console.log(userReviews);
+        if (userReviews.length !== 0) displayReviewsTable(userReviews);
+        else console.log("Keine Nutzerbewertung zum angegebenen Produkt vorhanden.");
+        break
+      }
 
-        if (isNaN(k) || k <= 0) {
-          console.error('Invalid input. Please enter a positive integer for K.');
-          continue;
-        }
-
-        const products = await fetchTopProducts(k);
-        if (products.length === 0) {
-          console.log('No products found.');
-        } else {
-          console.log('Top Products:');
-          displayProductsTable(products);
-        }
+      // getTrolls
+      case 8: {
+        const trolls = await fetchData("reviews/get-trolls");
+        displayUsersTable(trolls);
         break;
       }
 
-      default:
-        console.log('Invalid option.');
-        break;
+      // getOffers
+      case 9: {
+        const productId = readlineSync.question("Eingabe - Product ID (ASIN): ");
+        const products = await fetchData("offers/get-offers", "productId", productId);
+        console.log(products);
+        if (products.length !== 0) displayOffersTable(products);
+        else console.log("Das angegebene Produkt wird in keinem Shop angeboten.");
+        break
+      }
+      case 10: {
+        break
+      }
     }
   }
 };
