@@ -1,6 +1,6 @@
-const Table = require('cli-table3');
-const readlineSync = require('readline-sync');
-const BASE_URL = 'http://localhost:8076/api/v1';
+const Table = require("cli-table3");
+const readlineSync = require("readline-sync");
+const BASE_URL = "http://localhost:8076/api/v1";
 
 function sleep(ms = 5000) {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -11,19 +11,29 @@ const fetchData = async (endpoint, paramName = null, paramValue = null) => {
     let url = `${BASE_URL}/${endpoint}`;
     if (paramName && paramValue) url += `?${paramName}=${paramValue}`;
     
-    console.log(url)
     const response = await fetch(url);
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error('Error fetching data:', error.message);
+    console.error("Error fetching data:", error.message);
     return [];
   }
 };
 
-const postData = async (endpoint, ...params) => {
+const postData = async (endpoint, varset) => {
   try {
-    const body = JSON.stringify(params);
+    // Erstelle ein leeres Objekt, um die Parameter aufzunehmen
+    const paramsObject = {};
+
+    // Iteriere durch die übergebenen Parameter im varset und fülle das Objekt
+    for (const variableName in varset) {
+      const variableValue = varset[variableName];
+      paramsObject[variableName] = variableValue;
+    }
+
+    // Konvertiere das Objekt in JSON-Format
+    const body = JSON.stringify(paramsObject);
+
     const response = await fetch(`${BASE_URL}/${endpoint}`, {
       method: 'POST',
       headers: {
@@ -31,6 +41,8 @@ const postData = async (endpoint, ...params) => {
       },
       body,
     });
+
+    console.log(response);
 
     if (response.ok) {
       const data = await response.json();
@@ -47,7 +59,7 @@ const postData = async (endpoint, ...params) => {
 
 const displayProductsTable = (products) => {
   const table = new Table({
-    head: ['ASIN', 'Product Title', 'Product Group', 'EAN', 'Sales Rank', 'Average Rating'],
+    head: ['ASIN', 'Titel', 'Kategorie', 'EAN', 'Verkaufsrang', 'Bewertung (Ø)'],
   });
 
   products.forEach((product) => {
@@ -66,7 +78,7 @@ const displayProductsTable = (products) => {
 
 const displayOffersTable = (products) => {
   const table = new Table({
-    head: ['ASIN', 'Titel', 'Kategorie', 'Verkaufsrang', 'Bewertung (avg)', 'Filiale', 'Preis', 'Währung', 'Zustand'],
+    head: ['ASIN', 'Titel', 'Kategorie', 'Verkaufsrang', 'Bewertung (Ø)', 'Filiale', 'Preis', 'Währung', 'Zustand'],
   });
 
   products.forEach((product) => {
@@ -111,7 +123,7 @@ const displayReviewsTable = (reviews) => {
       review.rating,
       review.helpfulVotes,
       review.summary ? review.summary.slice(0,30) : review.summary,
-      review.content ? review.content.slice(0,30) : review.content
+      review.content ? review.content.slice(0,65) : review.content
     ]);
   });
 
@@ -155,7 +167,7 @@ const main = async () => {
       '-- getTrolls: Zeige alle oft-bewertenden Nutzer an, die auffällig oft ein schlechtes Rating vergeben',
       '-- getOffers: Erhalte eine Liste aller Angebote für ein spezifisches Produkt',
     ]
-    let selectedOptionIndex = readlineSync.keyInSelect(options, 'MENU: Choose an option:', {
+    let selectedOptionIndex = readlineSync.keyInSelect(options, "MENU: Choose an option:", {
     });
 
     switch (selectedOptionIndex) {
@@ -214,9 +226,19 @@ const main = async () => {
         break
       }
 
-      // addNewReview
       case 6: {
-        // TODO!
+
+        const varSet = {
+            productId: readlineSync.question("Eingabe - Product ID (ASIN): "),
+            username: readlineSync.question("Eingabe - Nutzername (leerer Nutzername = anonyme Gast-Bewertung): "),
+            rating: parseInt(readlineSync.question("Eingabe - Bewertung (1-5): ")),
+            helpfulVotes: 0,
+            summary: readlineSync.question("Zusammenfassung der Bewertung: "),
+            content: readlineSync.question("Freitext: "),
+         }
+
+        await postData("reviews/add-review", varSet);
+      
         break
       }
 
