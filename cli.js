@@ -130,21 +130,24 @@ const displayReviewsTable = (reviews) => {
   console.log(table.toString());
 };
 
+// Diese Funktion zeigt den Kategorienbaum in einer hierarchischen Struktur an.
+// Sie akzeptiert ein Array von Kategorien und kann optional mit einer Tiefe initialisiert werden.
 const displayCategoryTree = (categories, depth = 0) => {
   categories.forEach((category, index, array) => {
-    const isLast = index === array.length - 1;
-    const prefix = depth > 0 ? (isLast ? '└── ' : '├── ') : '';
+    const isLast = index === array.length - 1; // Prüfen, ob die aktuelle Kategorie die letzte in der Liste ist
+    const prefix = depth > 0 ? (isLast ? '└── ' : '├── ') : ''; // Verwendet verschiedene Präfixe für die Anzeige, um die Hierarchie darzustellen
 
-    const indent = '    '.repeat(depth); // Tiefenlevel mit je 4 spaces
+    const indent = '    '.repeat(depth); // Erzeugt die Einrückung basierend auf der Tiefe; 4 Leerzeichen pro Tiefe
 
+    // Zeigt den Kategorienamen an, eingerückt und mit dem geeigneten Präfix für die Hierarchie
     console.log(`${indent}${prefix}${category.name}`);
     
     if (category.subcategories.length > 0) {
+      // Wenn die aktuelle Kategorie Unterkategorien hat, rufe die Funktion rekursiv für die Unterkategorien auf
       displayCategoryTree(category.subcategories, depth + 1);
     }
   });
 }
-
 
 const main = async () => {
   console.log("╭─────────────────────────────────────────── ");
