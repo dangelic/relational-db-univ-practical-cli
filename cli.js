@@ -2,7 +2,7 @@ const Table = require("cli-table3");
 const readlineSync = require("readline-sync");
 const BASE_URL = "http://localhost:8076/api/v1";
 
-function sleep(ms = 5000) {
+function sleep(ms = 5) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
@@ -41,8 +41,6 @@ const postData = async (endpoint, varset) => {
       },
       body,
     });
-
-    console.log(response);
 
     if (response.ok) {
       const data = await response.json();
@@ -89,7 +87,7 @@ const displayOffersTable = (products) => {
       product.product.salesrank,
       product.product.averageRating || 'not rated yet.',
       product.shop.shopId,
-      product.shop.price ? product.shop.price : "In dieser Filiale ausverkauft.", 
+      product.price ? product.price : "In dieser Filiale ausverkauft.", 
       product.shop.currency,
       product.shop.state,
     ]);
