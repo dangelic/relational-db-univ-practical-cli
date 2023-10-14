@@ -148,25 +148,24 @@ const displayCategoryTree = (categories, depth = 0) => {
 }
 
 const main = async () => {
-  console.log("╭─────────────────────────────────────────── ");
+  console.log("╭────────────────────────────────────────────────────────────────────────────────  ");
   console.log("│       Welcome to the Tiny Web Shop          ");
   console.log("│            in form of a CLI!                ");
   console.log("│ ----------------------------------------    ");
-  console.log("╰─────────────────────────────────────────── ");
-  console.log();
+  console.log("╰────────────────────────────────────────────────────────────────────────────────  ");
 
   while (loop=true) {
     const options = [
-      '-- getProduct: Erhalte Informationen zu einem spezifischen Produkt', 
-      '-- getProducts: Erhalte eine Liste an Produkten, die zu einem Suchmuster passen', 
-      '-- getCategoryTree: Zeige alle Kategorien in einem Tree',
-      '-- getProductsByCategoryPath: Erhalte eine Liste an Produkten unter einem Pfad der Kategorie',
-      '-- getTopProducts: Erhalte eine Liste der am besten bewerteten Produkte von Nutzern und Gästen', 
-      '-- getSimilarCheaperProduct: Erhalte eine Liste an ähnlichen - aber preiswerteren Produkten',
-      '-- addNewReview: Füge eine Bewertung als Gast (annonym) oder als angemeldeter Nutzer hinzu',
-      '-- viewUserReviews: chaue Nutzerbewertungen zu einem spezifischen Produkt an',
-      '-- getTrolls: Zeige alle oft-bewertenden Nutzer an, die auffällig oft ein schlechtes Rating vergeben',
-      '-- getOffers: Erhalte eine Liste aller Angebote für ein spezifisches Produkt',
+      '-- Get information about a specific product',
+      '-- Get a list of products that match a search pattern',
+      '-- Display all categories in a tree structure',
+      '-- Get a list of products under a category path',
+      '-- Get a list of the highest-rated products by users and guests',
+      '-- Get a list of similar but cheaper products',
+      '-- Add a new review as a guest (anonymous) or a registered user',
+      '-- View user reviews for a specific product',
+      '-- Show all users who frequently give poor ratings',
+      '-- Get a list of all offers for a specific product',
     ]
     let selectedOptionIndex = readlineSync.keyInSelect(options, "MENU: Choose an option:", {
     });
